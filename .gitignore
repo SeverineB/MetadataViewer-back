@@ -4,4 +4,8 @@ dist/
 .DS_Store
 Thumbs.db
 
+config/
+
+images/
+
 yarn-error.log

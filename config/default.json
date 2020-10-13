@@ -1,4 +1,7 @@
 {
   "mongoURI": "mongodb://localhost:27017/testgallery",
-  "jwtSecret": "testgallery-secret-key"
+  "accessJwtSecret": "testgallery-secret-key",
+  "refreshJwtSecret": "testgallery-refresh-secret-key",
+  "sessionSecret": "testgallery-secret-session-key",
+  "protocol": "http"
 }
