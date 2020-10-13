@@ -13,9 +13,11 @@ const storage = multer.diskStorage({
   },
   fileName: (req, file, cb) => {
     const fileName = file.originalName.toLowerCase().split(' ').join('-');
-    cb(null, fileName + Date.now())
+    cb(null, `${fileName}_${Date.now()}`)
   }
 });
+
+// validate the mime types allowed
 
 const fileFilter = (req, file, cb) => {
   if (file.mimetype == 'image/jpeg' || file.mimetype == 'image/png') {
@@ -25,9 +27,6 @@ const fileFilter = (req, file, cb) => {
   }
 }
 
-// validate the mime types allowed
-
-
-module.exports = multer({ storage: storage, fileFilter: fileFilter }).single('image');
+module.exports = multer({ storage: storage, limits: {/* fileSize: 8000000,  */fileFilter: fileFilter }}).single('image');
 
 

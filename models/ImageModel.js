@@ -5,10 +5,16 @@ const Schema = mongoose.Schema;
 // create PictureSchema
 
 const ImageSchema = new Schema({
-  imagePath: {
+  name: {
     type: String,
   },
-  imageThumbPath: {
+  size: {
+    type: Number,
+  },
+  type: {
+    type: String,
+  },
+  imagePath: {
     type: String,
   }
 });
