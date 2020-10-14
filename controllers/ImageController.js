@@ -1,54 +1,64 @@
 const Image = require('../models/ImageModel');
 const path = require('path');
 const fs = require('fs');
-const im = require('gm').subClass({imageMagick: true });
-const ExifImage = require('exif').ExifImage;
-const config = require('config');
+const exifr = require('exifr');
 
 module.exports = {
 
-  // Get all the Pictures
+  // Get all the Pictures with metadata
 
   findAll: async (req, res) => {
     try {
       const images = await Image.find({})
       console.log('IMAGES ',images);
-      // modify imagePath stored in db for each document to construct the real url
-      const imagesUrl = images.map((image) => {
-        console.log('IMAGE DANS FINDALL :', image)
+    
+      // Promise.all send back a promise after all the promises inside are resolved
+      const imagesToSend = await Promise.all(images.map(async (image) => {
+
+        // Read and store metadata
+        const exifMetadata = await exifr.parse(image.imagePath);
+
+        // modify imagePath stored in db for each document to construct the real url
         const imageName = image.imagePath.replace('./', '');
-        const host = process.env.HOST;
-        const protocol = process.env.PROTOCOL;
-        const port = process.env.PORT;
-        const imageUrl = `${protocol}://${host}:${port}/${imageName}`;
+        const imageUrl = `${process.env.PROTOCOL}://${process.env.HOST}:${process.env.PORT}/${imageName}`;
         const id = image._id;
         const { name, size, type } = image;
-        return {id, imageUrl, metadata: {name, size, type}};
-      })
-      res.send(imagesUrl)
+
+        // Send exifMetadata only if available
+        if (!exifMetadata)
+          return {image, metadata: {name, size, type}};
+        else
+          return {image, metadata: {name, size, type}, exifMetadata};
+      }))
+      /* res.send(imagesToSend) */
+      res.send(imagesToSend)
     } catch (error) {
-      res.status(500).send()
+      res.status(500).send('ERROR ', error.message)
     }
   },
 
   // Upload a picture
 
   add: async (req, res) => {
-    console.log('req.file.path :', req.file.path)
-    console.log('req.file :', req.file)
-
     try {
       // save image path in db
       const imagePath = req.file.path;
+      console.log('REQ FILE DANS ADD ', req.file);
+      const imageUrl = `${process.env.PROTOCOL}://${process.env.HOST}:${process.env.PORT}/${req.file.filename}`;
+      console.log(imageUrl);
       const newImage = await Image.create({
         name: req.file.originalname,
         size: req.file.size,
         type: req.file.mimetype,
-        imagePath})
+        imagePath
+      })
       await newImage.save();
       console.log('req file filename :', req.file.filename);
       console.log('REQ FILE NAME ', req.file.originalname);
+      
       res.send({
+        id: newImage._id,
+        imageUrl: imageUrl,
         metadata: {
           name: newImage.name,
           size: newImage.size,
@@ -77,7 +87,7 @@ module.exports = {
         if (err) {
           throw err
         } else {
-          console.log('Image bien supprimée en file system');      
+          console.log('Image supprimée en file system');      
         }
       })
       res.status(200).send('L\'image a bien été supprimée');
