@@ -30,10 +30,10 @@ module.exports = {
         else
           return {image, metadata: {name, size, type}, exifMetadata};
       }))
-      /* res.send(imagesToSend) */
+      // send data in response
       res.send(imagesToSend)
     } catch (error) {
-      res.status(500).send('ERROR ', error.message)
+     res.status(500).send(error);
     }
   },
 
@@ -43,9 +43,8 @@ module.exports = {
     try {
       // save image path in db
       const imagePath = req.file.path;
-      console.log('REQ FILE DANS ADD ', req.file);
       const imageUrl = `${process.env.PROTOCOL}://${process.env.HOST}:${process.env.PORT}/${req.file.filename}`;
-      console.log(imageUrl);
+
       const newImage = await Image.create({
         name: req.file.originalname,
         size: req.file.size,
@@ -53,8 +52,6 @@ module.exports = {
         imagePath
       })
       await newImage.save();
-      console.log('req file filename :', req.file.filename);
-      console.log('REQ FILE NAME ', req.file.originalname);
       
       res.send({
         id: newImage._id,
@@ -67,7 +64,7 @@ module.exports = {
         imagePath: newImage.imagePath,
         message: 'Le fichier a bien été uploadé !'})
     } catch (error) {
-      res.status(500).send(error.message)
+      res.status(500).send(error)
       }
   },
 
@@ -79,20 +76,20 @@ module.exports = {
       const imageUrl = await Image.findByIdAndDelete(imageId);
       console.log('imageUrl', imageUrl);
       if (!imageUrl) {
-        res.status(401).send()
+        res.status(401).send(error)
       }
       console.log('image supprimée en bdd');
 
-      fs.unlink(imageUrl.imagePath, (err) => {
-        if (err) {
-          throw err
+      fs.unlink(imageUrl.imagePath, (error) => {
+        if (error) {
+          console.log(error);
         } else {
           console.log('Image supprimée en file system');      
         }
       })
       res.status(200).send('L\'image a bien été supprimée');
     } catch (error) {
-      res.status(500).send()
+      res.status(500).send(error)
     } 
   }
 }

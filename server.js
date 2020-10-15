@@ -16,7 +16,7 @@ const app = express();
 // bodyparser middleware
 app.use(bodyParser.json());
 
-// manage cors
+// configure cors
 const corsOptions = {
   origin: ['http://localhost:8080'],
   allowedHeaders: [

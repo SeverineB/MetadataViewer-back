@@ -12,7 +12,7 @@ const User = require('../../controllers/UserController');
 router.get('/', auth, User.findAll);
 
 // add a user
-router.post('/register', auth, User.register);
+router.post('/register', User.register);
 
 // connect a user
 router.post('/login', User.login);

@@ -45,13 +45,16 @@ module.exports = {
         if (alreadyExist){
           res.status(401).send({message: 'Cet email existe déjà !'});
         } else {
+
           // if everything is ok create new user
+
           const newUser = await User.create({
             email: email,
             password: bcrypt.hashSync(password, 10),
             username: username,
             token: null
           })
+
           await newUser.save();
           res.status(200).send({message: 'L\'utilisateur a été bien été enregistré !'});
         }
@@ -68,8 +71,6 @@ module.exports = {
   //
   // Login a user
   //
-
-
 
   login: async (req, res) => {
   
@@ -96,30 +97,30 @@ module.exports = {
             }
           });
         }
-          
-          // create the token
-          const token = jwt.sign({
-            id: user._id,
-            username: user.username
-          },
-            process.env.ACCESS_TOKEN_SECRET,
-            {expiresIn: 86400}
-          );
-          
-          // stock token in user data
-          user.token = token;
-          await user.save();
-          console.log('USER, user);')
+  
+        // create a token
+        const token = jwt.sign({
+          id: user._id,
+          username: user.username
+        },
+          process.env.ACCESS_TOKEN_SECRET,
+          {expiresIn: 86400}
+        );
 
-          // create cookie with token
-          res.cookie('token', token, {httpOnly:true}).send({
-            isLogged: true,
-            session: {
-              _id: user._id,
-              username: user.username,
+        // save token in db
+        user.token = token;
+        await user.save();
+
+        // send the token in a cookie
+        res.cookie('token', token, {httpOnly:true}).send({
+          isLogged: true,
+          session: {
+            _id: user._id,
+            username: user.username,
             }
           });
         }
+
     } catch (error) {
       res.status(500).send({
         error: {
@@ -134,9 +135,7 @@ module.exports = {
 
   userLogged: async (req, res) => {
     console.log('dans userLogged controller req.cookies.token :', req.cookies.token);
-    res.status(200).send({
-      message: 'User bien connecté !'
-    });
+    res.status(200).send({message: 'User bien connecté !'});
   },
 
   //
@@ -144,10 +143,12 @@ module.exports = {
   //
 
   logout: async (req, res) => {
-    console.log('req.token dans logout :', req.cookies.token)
+    console.log('REQ COOKIES TOKEN LOGOUT', req.cookies.token)
     const user = await User.findOne({ token: req.cookies.token });
+    // delete token in db
     user.token = null;
     await user.save();
+    // delete cookie in browser
     res.clearCookie('token').send();
   }
 };
