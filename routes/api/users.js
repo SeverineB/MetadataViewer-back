@@ -18,7 +18,7 @@ router.post('/register', User.register);
 router.post('/login', User.login);
 
 // deconnect a user
-router.post('/logout', auth, User.logout);
+router.get('/logout', auth, User.logout);
 
 // check if user connected
 router.post('/isLogged', auth, User.userLogged);

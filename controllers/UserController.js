@@ -107,12 +107,8 @@ module.exports = {
           {expiresIn: 86400}
         );
 
-        // save token in db
-        user.token = token;
-        await user.save();
-
         // send the token in a cookie
-        res.cookie('token', token, {httpOnly:true}).send({
+        res.cookie('token', token, {maxAge: 86400, httpOnly:true, path: '/'}).send({
           isLogged: true,
           session: {
             _id: user._id,
@@ -133,7 +129,7 @@ module.exports = {
   // Check if user is logged
   //
 
-  userLogged: async (req, res) => {
+   userLogged: async (req, res) => {
     console.log('dans userLogged controller req.cookies.token :', req.cookies.token);
     res.status(200).send({message: 'User bien connecté !'});
   },
@@ -144,11 +140,12 @@ module.exports = {
 
   logout: async (req, res) => {
     console.log('REQ COOKIES TOKEN LOGOUT', req.cookies.token)
-    const user = await User.findOne({ token: req.cookies.token });
-    // delete token in db
-    user.token = null;
-    await user.save();
+
+   /*  await user.save(); */
     // delete cookie in browser
-    res.clearCookie('token').send();
+    /* res.clearCookie('token') *//* .send({message: 'User déconnecté'}) */;
+    res.clearCookie('token').send({message: 'user déconnecté'})
+    /* res.cookie('token', '', { expires: new Date(1), path: '/' }) */
+    console.log('REQ COOKIES AFTER LOGOUT ', req.cookies.token);
   }
 };

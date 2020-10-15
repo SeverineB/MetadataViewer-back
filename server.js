@@ -38,7 +38,7 @@ app.use(cookieParser());
 // routes
 app.use('/images', express.static(__dirname + '/images'));
 app.use('/api/images', images);
-app.use('/api/users', users);
+app.use('/api/users', users); 
 
 //
 // MONGO DB
