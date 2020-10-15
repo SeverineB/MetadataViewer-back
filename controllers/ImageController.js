@@ -10,7 +10,6 @@ module.exports = {
   findAll: async (req, res) => {
     try {
       const images = await Image.find({})
-      console.log('IMAGES ',images);
     
       // Promise.all send back a promise after all the promises inside are resolved
       const imagesToSend = await Promise.all(images.map(async (image) => {
