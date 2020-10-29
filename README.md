@@ -3,7 +3,7 @@
 
 ### Description
 
-Cette application permet de visualiser les métadonnées d'une image que l'on a téléchargée, après s'être inscrit et connecté.
+Backend d'une application permettant de visualiser les métadonnées d'une image que l'on a téléchargée, après s'être inscrit et connecté.
 
 ### Frameworks & outils utilisés
 ----------------------------------
