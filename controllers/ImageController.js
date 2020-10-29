@@ -75,7 +75,7 @@ module.exports = {
       const imageUrl = await Image.findByIdAndDelete(imageId);
       console.log('imageUrl', imageUrl);
       if (!imageUrl) {
-        res.status(401).send(error)
+        return res.status(401).send(error)
       }
       console.log('image supprimée en bdd');
 

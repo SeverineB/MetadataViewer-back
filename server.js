@@ -7,16 +7,20 @@ require('dotenv').config();
 const multer = require('multer');
 
 // import routes
+
 const images = require('./routes/api/images');
 const users = require('./routes/api/users');
 
 // create express app
+
 const app = express();
 
 // bodyparser middleware
+
 app.use(bodyParser.json());
 
 // configure cors
+
 const corsOptions = {
   origin: ['http://localhost:8080'],
   allowedHeaders: [
@@ -33,18 +37,28 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // cookieParser middleware
+
 app.use(cookieParser());
 
 // routes
+
 app.use('/images', express.static(__dirname + '/images'));
 app.use('/api/images', images);
 app.use('/api/users', users); 
+
+// errors handling middleware
+
+app.use((err, req, res, next) => {
+  console.log(err.stack);
+  res.status(500).send({message: 'Une erreur est survenue !'});
+})
 
 //
 // MONGO DB
 //
 
 // connect to Mongo
+
 connect = mongoose.connect(process.env.MONGO_URI, 
   { useNewUrlParser: true,
   useUnifiedTopology: true })

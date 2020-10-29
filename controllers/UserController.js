@@ -1,9 +1,7 @@
 const User = require('../models/UserModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const { validationSchema } = require('../validations/user');
-const user = require('../validations/user');
+const { authSchema } = require('../validations/user');
 
 module.exports = {
 
@@ -29,41 +27,47 @@ module.exports = {
       // destructuring request body
       const { username, email, password } = req.body;
       if (!email || !password || !username) {
-        res.status(401).send({message: 'Les champs doivent tous être renseignés !'})
+        res.status(401).send({
+          success: false,
+          message: 'Les champs doivent tous être renseignés !'})
       }
 
       // validate with Joi schema
+      const result = await authSchema.validateAsync(req.body);
+      const { error } = result;
 
-      const result = validationSchema.validate(req.body);
-      const { error, value } = result;
       if (error) {
-        res.status(401).send({message: error.message})
+        return res.status(401).send({
+          success: false,
+          message: error.message})
       }
-      else {
-        // check if email doesn't already exist on db
-       const alreadyExist = await User.findOne({ email: email });
-        if (alreadyExist){
-          res.status(401).send({message: 'Cet email existe déjà !'});
-        } else {
 
-          // if everything is ok create new user
-
-          const newUser = await User.create({
-            email: email,
-            password: bcrypt.hashSync(password, 10),
-            username: username,
-            token: null
-          })
-
-          await newUser.save();
-          res.status(200).send({message: 'L\'utilisateur a été bien été enregistré !'});
-        }
+      // check if email doesn't already exist on db
+      const alreadyExist = await User.findOne({ email: email });
+      if (alreadyExist){
+        res.status(401).send({
+          success: false,
+          message: 'Cet email existe déjà !'});
       }
-    } catch (error) {
+
+      // if everything is ok create new user
+      const newUser = await User.create({
+        email: email,
+        password: bcrypt.hashSync(password, 10),
+        username: username,
+      })
+
+      await newUser.save();
+      res.status(200).send({
+        success: true,
+        message: 'L\'utilisateur a été bien été enregistré !'
+      });
+    }
+    catch (error) {
+      console.log(error.message);
       res.status(500).send({
-        error: {
+          success: false,
           message: 'Impossible d\'exécuter la requête !'
-        }
       })
     }
   },
@@ -79,43 +83,51 @@ module.exports = {
       const user = await User.findOne({ email: email });
 
       if (!user) {
-        res.status(401).send({
+        return res.status(401).send({
           error: {
             id: 'email',
             message: 'L\'email n\'existe pas !'
           }
         });
-      } else {
+      }
         
-        // compare the password with the hashed one in db
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-          res.status(401).send({
-            error: {
-              id: 'password',
-              message: 'Le mot de passe n\'est pas correct !'
-            }
-          });
-        }
-  
-        // create a token
-        const token = jwt.sign({
-          id: user._id,
-          username: user.username
-        },
-          process.env.ACCESS_TOKEN_SECRET,
-          {expiresIn: 86400}
-        );
+      // compare the password with the hashed one in db
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(401).send({
+          error: {
+            id: 'password',
+            message: 'Le mot de passe n\'est pas correct !'
+          }
+        });
+      }
 
-        // send the token in a cookie
-        res.cookie('token', token, {maxAge: 86400, httpOnly:true, path: '/'}).send({
-          isLogged: true,
-          session: {
-            _id: user._id,
-            username: user.username,
-            }
-          });
-        }
+      // create a token
+      const token = jwt.sign({
+        id: user._id,
+        username: user.username
+      },
+        process.env.ACCESS_TOKEN_SECRET,
+        {expiresIn: 86400}
+      );
+
+      // store token in user data
+      user.token = token;
+      await user.save();
+
+      // send the token in a cookie
+      res.cookie('token', token, {
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        httpOnly:true,
+        path: '/'
+      }).send({
+        isLogged: true,
+        session: {
+          _id: user._id,
+          username: user.username,
+          }
+        });
+        
 
     } catch (error) {
       res.status(500).send({
@@ -129,7 +141,7 @@ module.exports = {
   // Check if user is logged
   //
 
-   userLogged: async (req, res) => {
+   userLogged: (req, res) => {
     console.log('dans userLogged controller req.cookies.token :', req.cookies.token);
     res.status(200).send({message: 'User bien connecté !'});
   },
@@ -139,13 +151,11 @@ module.exports = {
   //
 
   logout: async (req, res) => {
-    console.log('REQ COOKIES TOKEN LOGOUT', req.cookies.token)
-
-   /*  await user.save(); */
-    // delete cookie in browser
-    /* res.clearCookie('token') *//* .send({message: 'User déconnecté'}) */;
+    // delete the token stored in db
+    const user = await User.findOne({token: req.cookies.token});
+    user.token = null;
+    await user.save();
+    // clear cookie in browser
     res.clearCookie('token').send({message: 'user déconnecté'})
-    /* res.cookie('token', '', { expires: new Date(1), path: '/' }) */
-    console.log('REQ COOKIES AFTER LOGOUT ', req.cookies.token);
   }
 };
