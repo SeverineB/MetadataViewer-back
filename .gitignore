@@ -10,4 +10,4 @@ config/
 
 images/
 
-yarn-error.log
+yarn-error.log.env
