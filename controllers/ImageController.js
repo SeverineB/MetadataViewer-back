@@ -9,6 +9,7 @@ module.exports = {
 
   findAll: async (req, res) => {
     try {
+      console.log('je suis dans le try de findall');
       const images = await Image.find({})
     
       // Promise.all send back a promise after all the promises inside are resolved
@@ -19,7 +20,8 @@ module.exports = {
 
         // modify imagePath stored in db for each document to construct the real url
         const imageName = image.imagePath.replace('./', '');
-        const imageUrl = `${process.env.PROTOCOL}://${process.env.HOST}:${process.env.PORT}/${imageName}`;
+        /* const imageUrl = `${process.env.PROTOCOL}://${process.env.HOST}:${process.env.PORT}/${imageName}`; */
+        const imageUrl = `${process.env.PROTOCOL}://${process.env.HOST}/${imageName}`;
         const id = image._id;
         const { name, size, type } = image;
 
@@ -79,6 +81,7 @@ module.exports = {
       }
       console.log('image supprimée en bdd');
 
+      // delete file stored on file system
       fs.unlink(imageUrl.imagePath, (error) => {
         if (error) {
           console.log(error);

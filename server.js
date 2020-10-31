@@ -20,21 +20,31 @@ const app = express();
 app.use(bodyParser.json());
 
 // configure cors
-
+/* 
 const corsOptions = {
-  origin: ['http://localhost:8080'],
+  origin: ['http://metadata-viewer.severinebianchi.com'],
   allowedHeaders: [
     'Accept',
     'Content-Type',
+    'Origin',
     'Authorization',
     'Access-Control-Allow-Methods',
+    'Access-Control-Allow-Origin',
     'Access-Control-Request-Headers',
   ],
   credentials: true,
   enablePreflight: true,
 };
 
-app.use(cors(corsOptions));
+app.use(cors(corsOptions)); */
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://metadata-viewer.severinebianchi.com');
+  res.header('Access-Control-Allow-Credentials', true);
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+  next();
+})
 
 // cookieParser middleware
 
@@ -44,7 +54,18 @@ app.use(cookieParser());
 
 app.use('/images', express.static(__dirname + '/images'));
 app.use('/api/images', images);
-app.use('/api/users', users); 
+app.use('/api/users', users);
+
+// HOME PAGE NODE SERVER
+app.get('/', (req, res) => {
+  res.send(`
+    <div style="margin: 5em auto; width: 400px; line-height: 1.5">
+      <h1 style="text-align: center">Hello!</h1>
+      <p>Si tu vois ce message, c'est que ton serveur est bien lancé !</p>
+      <div>Désormais, tu dois venir utiliser l'API</div>
+    </div>
+  `);
+});
 
 // errors handling middleware
 
@@ -59,11 +80,13 @@ app.use((err, req, res, next) => {
 
 // connect to Mongo
 
-connect = mongoose.connect(process.env.MONGO_URI, 
+/* MONGO_URI=mongodb+srv://SevB78:Jilou666!@metadataviewerdb.eg3tx.mongodb.net/MetadataViewerDB?retryWrites=true&w=majority */
+
+connect = mongoose.connect(process.env.MONGO_URI,
   { useNewUrlParser: true,
   useUnifiedTopology: true })
   // if connection is ok
-  .then(() => console.log('Connection with database succeed !'))
+  .then(() => console.log('Connection with MongoDB atlas succeed !'))
   // if there is an error
   .catch(err => console.log(err));
 
