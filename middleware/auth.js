@@ -12,7 +12,8 @@ const auth = async (req, res, next) => {
 
   try {
     const user = await User.findOne({token: req.cookies.token});
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
+    
     // check if token in browser is the same than the one stored in db
     if (req.cookies.token == user.token) {
       console.log('c\'est le même utilisateur');

@@ -11,17 +11,23 @@ module.exports = {
     try {
       console.log('je suis dans le try de findall');
       const images = await Image.find({})
-    
+      console.log('images ', images);
       // Promise.all send back a promise after all the promises inside are resolved
       const imagesToSend = await Promise.all(images.map(async (image) => {
-
+        console.log('je suis dans ImagesToSend');
         // Read and store metadata
         const exifMetadata = await exifr.parse(image.imagePath);
 
         // modify imagePath stored in db for each document to construct the real url
         const imageName = image.imagePath.replace('./', '');
-        /* const imageUrl = `${process.env.PROTOCOL}://${process.env.HOST}:${process.env.PORT}/${imageName}`; */
-        const imageUrl = `${process.env.PROTOCOL}://${process.env.HOST}/${imageName}`;
+        if (process.env.APP_ENV === 'local') {
+       
+          const imageUrl = `${process.env.PROTOCOL}://${process.env.HOST}:${process.env.PORT}/${imageName}`;
+          console.log('imageURL', imageUrl);
+        } else if (process.env.APP_ENV === 'production') {
+          const imageUrl = `${process.env.PROTOCOL}://${process.env.HOST}/${imageName}`;
+        }
+        
         const id = image._id;
         const { name, size, type } = image;
 
@@ -34,7 +40,7 @@ module.exports = {
       // send data in response
       res.send(imagesToSend)
     } catch (error) {
-     res.status(500).send(error);
+        return res.status(500).send(error);
     }
   },
 

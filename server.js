@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 require('dotenv').config();
-const multer = require('multer');
+require('custom-env').env('local');
 
 // import routes
 
@@ -39,12 +39,14 @@ const corsOptions = {
 app.use(cors(corsOptions)); */
 
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://metadata-viewer.severinebianchi.com');
+  res.header('Access-Control-Allow-Origin', process.env.NODE_ENV === 'local' ? 'http://localhost:8080' : 'http://metadata-viewer.severinebianchi.com');
   res.header('Access-Control-Allow-Credentials', true);
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
   next();
 })
+
+console.log(process.env.NODE_ENV);
 
 // cookieParser middleware
 
@@ -80,8 +82,6 @@ app.use((err, req, res, next) => {
 
 // connect to Mongo
 
-/* MONGO_URI=mongodb+srv://SevB78:Jilou666!@metadataviewerdb.eg3tx.mongodb.net/MetadataViewerDB?retryWrites=true&w=majority */
-
 connect = mongoose.connect(process.env.MONGO_URI,
   { useNewUrlParser: true,
   useUnifiedTopology: true })
@@ -89,8 +89,5 @@ connect = mongoose.connect(process.env.MONGO_URI,
   .then(() => console.log('Connection with MongoDB atlas succeed !'))
   // if there is an error
   .catch(err => console.log(err));
-
-/* const port = process.env.PORT || 3001; */
-/* const HOST = 'localhost'; */
-
+  
 app.listen(process.env.PORT, process.env.HOST, () => console.log(`Serveur lancé sur le port ${process.env.PORT}`));

@@ -119,8 +119,8 @@ module.exports = {
         id: user._id,
         username: user.username
       },
-        process.env.ACCESS_TOKEN_SECRET,
-        {expiresIn: 86400}
+        process.env.TOKEN_SECRET,
+        {expiresIn: process.env.TOKEN_EXPIRESIN}
       );
 
       // store token in user data
@@ -131,6 +131,7 @@ module.exports = {
       return res.cookie('token', token, {
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
         httpOnly:true,
+        secure: true,
         path: '/'
       }).send({
         isLogged: true,
