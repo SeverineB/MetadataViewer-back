@@ -27,7 +27,7 @@ module.exports = {
       // destructuring request body
       const { username, email, password } = req.body;
       if (!email || !password || !username) {
-        return res.status(401).send({
+        return res.status(400).send({
           message: 'Les champs doivent tous être renseignés !'})
       }
 
@@ -37,7 +37,7 @@ module.exports = {
 
       if (error) {
         console.log('joi error', error);
-        return res.status(403).send({
+        return res.status(404).send({
           message: error.message})
       }
 
@@ -45,7 +45,7 @@ module.exports = {
       const alreadyExist = await User.findOne({ email: email });
       if (alreadyExist) {
         return res.status(401).send({
-        message: 'Cet email existe déjà'
+          message: 'Cet email existe déjà'
         });
       }
 
@@ -85,7 +85,6 @@ module.exports = {
 
       if (error) {
         return res.status(400).send({
-          success: false,
           message: error.message})
       }
 
@@ -93,10 +92,7 @@ module.exports = {
 
       if (!user) {
         return res.status(404).send({
-          error: {
-            id: 'email',
-            message: 'Cet email n\'existe pas !'
-          }
+          message: 'Cet email n\'existe pas !'
         });
       }
         
@@ -104,10 +100,7 @@ module.exports = {
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return res.status(400).send({
-          error: {
-            id: 'password',
-            message: 'Le mot de passe n\'est pas correct !'
-          }
+          message: 'Le mot de passe n\'est pas correct !'
         });
       }
 
@@ -141,8 +134,7 @@ module.exports = {
 
     } catch (error) {
       res.status(500).send({
-        error: {
-          message: 'Impossible d\'exécuter la requête !'}
+          message: 'Impossible d\'exécuter la requête !'
         })
     }
   },
@@ -154,7 +146,8 @@ module.exports = {
    userLogged: async (req, res) => {
     console.log('dans userLogged controller req.cookies.token :', req.cookies.token);
 
-    res.status(200).send({message: 'User bien connecté !'});
+    res.status(200).send({
+      message: 'Utilisateur bien connecté !'});
   },
 
   //
@@ -168,6 +161,8 @@ module.exports = {
     await user.save();
 
     // clear cookie in browser
-    res.clearCookie('token').send({message: 'user déconnecté'})
+    res.clearCookie('token').send({
+      message: 'Utilisateur déconnecté'
+    })
   }
 };

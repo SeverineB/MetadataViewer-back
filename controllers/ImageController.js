@@ -9,21 +9,19 @@ module.exports = {
 
   findAll: async (req, res) => {
     try {
-      console.log('je suis dans le try de findall');
       const images = await Image.find({})
-      console.log('images ', images);
+
       // Promise.all send back a promise after all the promises inside are resolved
       const imagesToSend = await Promise.all(images.map(async (image) => {
-        console.log('je suis dans ImagesToSend');
+
         // Read and store metadata
         const exifMetadata = await exifr.parse(image.imagePath);
 
         // modify imagePath stored in db for each document to construct the real url
+        // and specify the url in prod or dev environment
         const imageName = image.imagePath.replace('./', '');
         if (process.env.APP_ENV === 'local') {
-       
           const imageUrl = `${process.env.PROTOCOL}://${process.env.HOST}:${process.env.PORT}/${imageName}`;
-          console.log('imageURL', imageUrl);
         } else if (process.env.APP_ENV === 'production') {
           const imageUrl = `${process.env.PROTOCOL}://${process.env.HOST}/${imageName}`;
         }
@@ -37,10 +35,14 @@ module.exports = {
         else
           return {image, metadata: {name, size, type}, exifMetadata};
       }))
+
       // send data in response
       res.send(imagesToSend)
+
     } catch (error) {
-        return res.status(500).send(error);
+        return res.status(500).send({
+          message: 'Impossible de récupérer les images'
+        });
     }
   },
 
@@ -71,7 +73,9 @@ module.exports = {
         imagePath: newImage.imagePath,
         message: 'Le fichier a bien été uploadé !'})
     } catch (error) {
-      res.status(500).send(error)
+      res.status(500).send({
+        message: 'Impossible de télécharger l\'image'
+      })
       }
   },
 
@@ -81,11 +85,12 @@ module.exports = {
     const imageId = req.params.id;
     try {
       const imageUrl = await Image.findByIdAndDelete(imageId);
-      console.log('imageUrl', imageUrl);
+
       if (!imageUrl) {
-        return res.status(401).send(error)
+        return res.status(404).send({
+          message: 'Cette image n\'existe pas !'
+        })
       }
-      console.log('image supprimée en bdd');
 
       // delete file stored on file system
       fs.unlink(imageUrl.imagePath, (error) => {
@@ -95,9 +100,13 @@ module.exports = {
           console.log('Image supprimée en file system');      
         }
       })
-      res.status(200).send('L\'image a bien été supprimée');
+      res.status(200).send({
+        message: 'L\'image a bien été supprimée'
+      });
     } catch (error) {
-      res.status(500).send(error)
+      res.status(500).send({
+        message: 'Impossible de supprimer l\'image'
+      })
     } 
   }
 }
