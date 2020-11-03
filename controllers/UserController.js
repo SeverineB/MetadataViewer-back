@@ -28,7 +28,6 @@ module.exports = {
       const { username, email, password } = req.body;
       if (!email || !password || !username) {
         return res.status(401).send({
-          success: false,
           message: 'Les champs doivent tous être renseignés !'})
       }
 
@@ -37,8 +36,8 @@ module.exports = {
       const { error } = result;
 
       if (error) {
-        return res.status(400).send({
-          success: false,
+        console.log('joi error', error);
+        return res.status(403).send({
           message: error.message})
       }
 
@@ -46,8 +45,8 @@ module.exports = {
       const alreadyExist = await User.findOne({ email: email });
       if (alreadyExist) {
         return res.status(401).send({
-          success: false,
-          message: 'Cet email existe déjà !'});
+        message: 'Cet email existe déjà'
+        });
       }
 
       // if everything is ok create new user
@@ -59,15 +58,13 @@ module.exports = {
 
       await newUser.save();
       return res.status(200).send({
-        success: true,
         message: 'L\'utilisateur a été bien été enregistré !'
       });
     }
     catch (error) {
-      console.log(error.message);
+      console.log('error dans catch', error.message);
       res.status(500).send({
-          success: false,
-          message: 'Impossible d\'exécuter la requête !'
+          message: 'Impossible de créer le compte',
       })
     }
   },
@@ -95,10 +92,10 @@ module.exports = {
       const user = await User.findOne({ email: email });
 
       if (!user) {
-        return res.status(401).send({
+        return res.status(404).send({
           error: {
             id: 'email',
-            message: 'L\'email n\'existe pas !'
+            message: 'Cet email n\'existe pas !'
           }
         });
       }
