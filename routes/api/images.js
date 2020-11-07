@@ -13,9 +13,9 @@ const Image = require('../../controllers/ImageController');
 router.get('/', Image.findAll);
 
 // upload a picture
-router.post('/upload', auth,  multer, Image.add);
+router.post('/upload/:userId', auth,  multer, Image.add);
 
 // delete a picture
-router.delete('/delete/:id', auth,  Image.findByIdAndDelete);
+router.delete('/delete/:id/:imageId', auth,  Image.findByIdAndDelete);
 
 module.exports = router;

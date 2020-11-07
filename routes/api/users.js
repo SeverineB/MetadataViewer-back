@@ -17,6 +17,9 @@ router.post('/register', User.register);
 // connect a user
 router.post('/login', User.login);
 
+// get all images of user
+router.get('/:id/images', auth, User.findImagesOfUser);
+
 // deconnect a user
 router.get('/logout', auth, User.logout);
 

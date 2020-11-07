@@ -5,6 +5,10 @@ const Schema = mongoose.Schema;
 // create PictureSchema
 
 const ImageSchema = new Schema({
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  },
   name: {
     type: String,
   },
@@ -15,6 +19,9 @@ const ImageSchema = new Schema({
     type: String,
   },
   imagePath: {
+    type: String,
+  },
+  thumbnailPath: {
     type: String,
   }
 });

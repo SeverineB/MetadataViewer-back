@@ -1,7 +1,10 @@
 const User = require('../models/UserModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { registerSchema, loginSchema } = require('../validations/user');
+const fs = require('fs');
+const exifr = require('exifr');
+const loginSchema = require('../validations/user');
+const registerSchema = require('../validations/user');
 
 module.exports = {
 
@@ -26,20 +29,23 @@ module.exports = {
 
       // destructuring request body
       const { username, email, password } = req.body;
+      console.log('REQ BODY dans register', req.body);
+
       if (!email || !password || !username) {
         return res.status(400).send({
           message: 'Les champs doivent tous être renseignés !'})
       }
 
+      // TODO : check how Joi validation isn' working on prod env
       // validate with Joi schema
-      const result = await registerSchema.validateAsync(req.body);
+      /* const result = await registerSchema.validateAsync(req.body);
       const { error } = result;
 
       if (error) {
         console.log('joi error', error);
         return res.status(404).send({
           message: error.message})
-      }
+      } */
 
       // check if email doesn't already exist on db
       const alreadyExist = await User.findOne({ email: email });
@@ -65,6 +71,7 @@ module.exports = {
       console.log('error dans catch', error.message);
       res.status(500).send({
           message: 'Impossible de créer le compte',
+          error,
       })
     }
   },
@@ -77,19 +84,21 @@ module.exports = {
   
     try {
       const { email, password } = req.body;
-      console.log(' req body', req.body);
-      
+      console.log('REQ BODY LOGIN', req.body);
+
+      // TODO : check how Joi validation isn' working on prod env
       // validate with Joi schema
-      const result = await loginSchema.validateAsync(req.body);
+      /* const result = await loginSchema.validateAsync(req.body);
       const { error } = result;
 
       if (error) {
         return res.status(400).send({
           message: error.message})
-      }
+      } */
 
+      console.log('je suis après la vérif Joi');
+      console.log('email', email);
       const user = await User.findOne({ email: email });
-
       if (!user) {
         return res.status(404).send({
           message: 'Cet email n\'existe pas !'
@@ -103,13 +112,14 @@ module.exports = {
           message: 'Le mot de passe n\'est pas correct !'
         });
       }
+      console.log('process env token', process.env.PRIVATE_KEY);
 
       // create a token
       const token = jwt.sign({
         id: user._id,
         username: user.username
       },
-        process.env.TOKEN_SECRET,
+        process.env.PRIVATE_KEY,
         {expiresIn: process.env.TOKEN_EXPIRESIN}
       );
 
@@ -121,7 +131,6 @@ module.exports = {
       return res.cookie('token', token, {
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
         httpOnly:true,
-        secure: true,
         path: '/'
       }).send({
         isLogged: true,
@@ -129,10 +138,9 @@ module.exports = {
           _id: user._id,
           username: user.username,
           }
-        });
-        
-
+        });  
     } catch (error) {
+      console.log(error);
       res.status(500).send({
           message: 'Impossible d\'exécuter la requête !'
         })
@@ -148,6 +156,52 @@ module.exports = {
 
     res.status(200).send({
       message: 'Utilisateur bien connecté !'});
+  },
+
+  //
+  // Get all image sof the user
+  //
+
+  findImagesOfUser: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = await User.findById(id).populate('images');
+
+      const userImages = await Promise.all(user.images.map(async (image) => {
+
+        // Read and store metadata
+        const exifMetadata = await exifr.parse(image.imagePath);
+
+        // modify imagePath stored in db for each document to construct the real url
+        // and specify the url in prod or dev environment
+        const imageName = image.imagePath.replace('./', '');
+
+        if (process.env.NODE_ENV === 'development') {
+          const imageUrl = `${process.env.PROTOCOL}://${process.env.HOST}:${process.env.PORT}/${image.thumbnailPath}`;
+        } else if (process.env.NODE_ENV === 'production') {
+          console.log('imageName', imageName)
+          const imageUrl = `${process.env.PROTOCOL}://${process.env.HOST}/${imageName}`;
+        }
+
+        const id = image._id;
+        const { name, size, type } = image;
+
+        // Send exifMetadata only if available
+        if (!exifMetadata)
+          return {image, metadata: {name, size, type}};
+        else
+          return {image, metadata: {name, size, type}, exifMetadata};
+      }))
+
+      // send data in response
+      res.send(userImages);
+
+    }
+    catch (error) {
+      return res.status(500).send({
+        message: 'Impossible de récupérer les images'
+      });
+    }
   },
 
   //

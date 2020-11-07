@@ -2,9 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const cors = require('cors');
-require('dotenv').config();
-require('custom-env').env('local');
+require('dotenv-flow').config();
 
 // import routes
 
@@ -20,33 +18,17 @@ const app = express();
 app.use(bodyParser.json());
 
 // configure cors
-/* 
-const corsOptions = {
-  origin: ['http://metadata-viewer.severinebianchi.com'],
-  allowedHeaders: [
-    'Accept',
-    'Content-Type',
-    'Origin',
-    'Authorization',
-    'Access-Control-Allow-Methods',
-    'Access-Control-Allow-Origin',
-    'Access-Control-Request-Headers',
-  ],
-  credentials: true,
-  enablePreflight: true,
-};
 
-app.use(cors(corsOptions)); */
+console.log('NODE ENV', process.env.NODE_ENV)
+console.log('NODE ENV', process.env.HOST)
 
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', process.env.NODE_ENV === 'local' ? 'http://localhost:8080' : 'http://metadata-viewer.severinebianchi.com');
+  res.header('Access-Control-Allow-Origin', process.env.NODE_ENV === 'development' ? 'http://localhost:8080' : 'http://metadata-viewer.severinebianchi.com');
   res.header('Access-Control-Allow-Credentials', true);
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
   next();
 })
-
-console.log(process.env.NODE_ENV);
 
 // cookieParser middleware
 
@@ -61,10 +43,14 @@ app.use('/api/users', users);
 // HOME PAGE NODE SERVER
 app.get('/', (req, res) => {
   res.send(`
-    <div style="margin: 5em auto; width: 400px; line-height: 1.5">
-      <h1 style="text-align: center">Hello!</h1>
-      <p>Le serveur est bien lancé !</p>
-    </div>
+    <div style="margin: 5em auto; width: 600px; line-height: 1.5; font-family: Montserrat">
+      <h1>THE METADATA VIEWER SERVER</h1>
+      <p>Ce petit serveur est bien lancé, il a ouvert ses ailes et vole maintenant haut vers les nuages !</p>
+      <p style="font-size: 12px">Comme personne ne lira ça, j'en profite pour y ajouter une petite citation qu'il est toujours bon de méditer...</p>
+      <p style="font-style: italic; font-size: 12px">"Vous savez, moi je ne crois pas qu’il y ait de bonne ou de mauvaise situation. Moi, si je devais résumer ma vie aujourd’hui avec vous, je dirais que c’est d’abord des rencontres. Des gens qui m’ont tendu la main, peut-être à un moment où je ne pouvais pas, où j’étais seul chez moi. Et c’est assez curieux de se dire que les hasards, les rencontres forgent une destinée… Parce que quand on a le goût de la chose, quand on a le goût de la chose bien faite, le beau geste, parfois on ne trouve pas l’interlocuteur en face je dirais, le miroir qui vous aide à avancer. Alors ça n’est pas mon cas, comme je disais là, puisque moi au contraire, j’ai pu : et je dis merci à la vie, je lui dis merci, je chante la vie, je danse la vie… je ne suis qu’amour ! Et finalement, quand beaucoup de gens aujourd’hui me disent « Mais comment fais-tu pour avoir cette humanité ? », et bien je leur réponds très simplement, je leur dis que c’est ce goût de l’amour ce goût donc qui m’a poussé aujourd’hui à entreprendre une construction mécanique, mais demain qui sait ? Peut-être simplement à me mettre au service de la communauté, à faire le don, le don de soi…"</p>
+      <p style="font-size: 10px; font-weight: bold; text-align: right">Astérix et Obélix : mission Cléopâtre, Panoramix et Otis</p>
+      <p style="text-align: center">Développé par Séverine Bianchi</p>
+      </div>
   `);
 });
 
@@ -83,9 +69,10 @@ app.use((err, req, res, next) => {
 
 connect = mongoose.connect(process.env.MONGO_URI,
   { useNewUrlParser: true,
-  useUnifiedTopology: true })
+  useUnifiedTopology: true,
+  useFindAndModify: false})
   // if connection is ok
-  .then(() => console.log('Connection with MongoDB atlas succeed !'))
+  .then(() => console.log('Connection with MongoDB ATLAS succeed !'))
   // if there is an error
   .catch(err => console.log(err));
   

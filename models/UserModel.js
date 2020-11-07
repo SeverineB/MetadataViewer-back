@@ -19,10 +19,14 @@ const UserSchema = new Schema({
   },
   token: {
     type: String,
-  }
-},
-  {
-  timestamps: true
+  },
+  images: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Image'
+    }
+  ],
+  timeStamps: Date,
 })
 
 module.exports = UserModel = mongoose.model('User', UserSchema)

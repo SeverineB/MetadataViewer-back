@@ -16,6 +16,8 @@ Backend d'une application permettant de visualiser les métadonnées d'une image
 * [JsonWebToken](https://www.npmjs.com/package/jsonwebtoken) // Gestion de token
 * [Mongoose](https://mongoosejs.com/) // Gestion d'une base de données MongoDB
 * [Multer](https://www.npmjs.com/package/multer) // Gestion du multipart/form-data (téléchargement de fichiers)
+* [Exifr](https://www.npmjs.com/package/exifr) // Lecture des métadonnées
+* [Sharp](https://www.npmjs.com/package/sharp) // Redimension et modification d'images
 
 ### Base de données
 -------------------
@@ -38,3 +40,8 @@ Pour télécharger MongoDB localement : https://www.mongodb.com/try/download/com
 -----------
 
 https://github.com/SeverineB/MetadataViewer-front
+
+### Améliorations
+-----------------
+
+* Passage en HTTPS (back et front)
