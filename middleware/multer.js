@@ -10,17 +10,15 @@ const storage = multer.diskStorage({
 
  destination: (req, file, cb) => {
     const { userId } = req.params;
+    // create user's directory if doesn't exist
     fs.exists(`./images/${userId}`, exist => {
       if (!exist) {
-        console.log('dossier existe pas');
         return fs.mkdir(`./images/${userId}`, error => cb(error, `./images/${userId}`))
       }
       return cb(null, `./images/${userId}`)
     })
   },
-  /* destination: (req, file, cb) => {
-    cb(null, './images');
-  }, */
+
   fileName: (req, file, cb) => {
     const fileName = req.file.originalName.toLowerCase().split(' ').join('-');
     cb(null, `${fileName}_${Date.now()}`)

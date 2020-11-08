@@ -56,7 +56,7 @@ app.use('/images', express.static(__dirname + '/images'));
 app.use('/api/images', images);
 app.use('/api/users', users);
 
-// HOME PAGE NODE SERVER
+// home page node server
 app.get('/', (req, res) => {
   res.send(`
     <div style="margin: 5em auto; width: 600px; line-height: 1.5; font-family: Montserrat">

@@ -29,14 +29,14 @@ module.exports = {
 
       // destructuring request body
       const { username, email, password } = req.body;
-      console.log('REQ BODY dans register', req.body);
 
       if (!email || !password || !username) {
         return res.status(400).send({
           message: 'Les champs doivent tous être renseignés !'})
       }
 
-      // TODO : check how Joi validation isn' working on prod env
+      // TODO : check how Joi validation isn't working on prod env
+
       // validate with Joi schema
       /* const result = await registerSchema.validateAsync(req.body);
       const { error } = result;
@@ -84,9 +84,9 @@ module.exports = {
   
     try {
       const { email, password } = req.body;
-      console.log('REQ BODY LOGIN', req.body);
 
-      // TODO : check how Joi validation isn' working on prod env
+      // TODO : check how Joi validation isn't working on prod env
+
       // validate with Joi schema
       /* const result = await loginSchema.validateAsync(req.body);
       const { error } = result;
@@ -96,8 +96,6 @@ module.exports = {
           message: error.message})
       } */
 
-      console.log('je suis après la vérif Joi');
-      console.log('email', email);
       const user = await User.findOne({ email: email });
       if (!user) {
         return res.status(404).send({
@@ -112,7 +110,6 @@ module.exports = {
           message: 'Le mot de passe n\'est pas correct !'
         });
       }
-      console.log('process env token', process.env.PRIVATE_KEY);
 
       // create a token
       const token = jwt.sign({
