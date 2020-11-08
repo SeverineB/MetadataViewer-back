@@ -2,6 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const xss = require('xss-clean');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
 require('dotenv-flow').config();
 
 // import routes
@@ -17,10 +20,23 @@ const app = express();
 
 app.use(bodyParser.json());
 
-// configure cors
+// limit body payload
+app.use(express.json({ limit: '10kb'}));
 
-console.log('NODE ENV', process.env.NODE_ENV)
-console.log('NODE ENV', process.env.HOST)
+// Data sanitization
+app.use(xss());
+
+const limit = rateLimit({
+  max: 100,
+  windowsMs: 60 * 60 * 1000,
+  message: 'Trop de requêtes simultanées !'
+});
+app.use('/', limit);
+
+// Mongo data mongoSanitize
+app.use(mongoSanitize());
+
+// configure headers
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', process.env.NODE_ENV === 'development' ? 'http://localhost:8080' : 'http://metadata-viewer.severinebianchi.com');
