@@ -35,6 +35,7 @@ Pour télécharger MongoDB localement : https://www.mongodb.com/try/download/com
   - nodemon server.js
 * Lancer le serveur dans le navigateur
   - http://localhost:3001
+* Utiliser le .env.example afin de configurer le .env (à créer à la racine du projet) avec les variables d'environnement nécessaires
 
 ### Frontend
 -----------
