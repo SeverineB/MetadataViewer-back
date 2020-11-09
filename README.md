@@ -28,6 +28,8 @@ Pour télécharger MongoDB localement : https://www.mongodb.com/try/download/com
 ### Installation
 ----------------
 
+*Ce projet nécessite d'avoir une base de données MongoDB (possibilité d'en créer une avec MongoDB Atlas).*
+
 * Cloner le dépôt (nécessite d'avoir Node installé)
 * Installation des dépendances
   - yarn
